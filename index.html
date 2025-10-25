@@ -5,11 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Commune – Autocomplétion (style Tally)</title>
   <style>
+    /* Aspect général minimal, aligné sur Tally */
     html, body { background: transparent; margin: 0; padding: 0; }
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color: #111; }
 
     /* Largeur contrôlée */
+    /*.wrap { max-width: 420px; position: relative; }*/
+    /*
+    .wrap {width: 100%;
+          max-width: 340px;  /* ← ajuste ici selon ton besoin : 320–360px fonctionne bien */
+          /*margin: 0 auto;*/    /* centre le champ horizontalement */
+        } */
+
     .wrap { width: 100%; max-width: 100%; margin: 0 auto; padding: 0; }
+
+
 
     /* Champ */
     .input { position: relative; }
@@ -17,59 +27,97 @@
       width: 100%;
       font-size: 16px;
       line-height: 1.2;
-      padding: 10px 36px 10px 12px; /* hauteur + espace pour flèche */
+      padding: 10px 36px 10px 12px; /* <- hauteur plus faible + place pour flèche */
       border: 1px solid #dcdcdc;
       border-radius: 10px;
       outline: none;
       background: #fff;
       box-shadow: 0 0 0 3px rgba(61,130,246,0);
       transition: box-shadow .15s ease, border-color .15s ease;
-      box-sizing: border-box;
-      height: 46px; /* desktop parity */
+      box-sizing: border-box;  /* indispensable pour éviter le dépassement */
     }
     .input input:focus { border-color: #8bb0ff; box-shadow: 0 0 0 3px rgba(61,130,246,.25); }
     .input input::placeholder {
       font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       font-size: 16px;
       font-weight: 400;
-      color: #BBBAB8; /* gris placeholder validé */
-      opacity: 1;
-    }
-    /* petite flèche à droite */
-    .input::after {
-      content: ""; position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-      width: 14px; height: 14px; pointer-events: none;
-      background: no-repeat center / 14px 14px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7l5 5 5-5' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      color: #BBBAB8;         /* gris Tally */
+      opacity: 1;             /* évite le placeholder trop pâle sur Android */
     }
 
-    /* Dropdown */
+
+    /* Dropdown (listbox) collé au champ, style proche Tally */
     .listbox {
       position: absolute; left: 0; right: 0; top: calc(100% + 6px);
       border: 1px solid #e5e7eb; border-radius: 12px; background: #fff;
       box-shadow: 0 10px 30px rgba(0,0,0,.08);
-      max-height: 280px; overflow-y: auto; padding: 6px; z-index: 1000;
-      -webkit-overflow-scrolling: touch; scroll-behavior: smooth;
+      max-height: 280px; overflow-y: auto; padding: 6px;
+      z-index: 1000;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
     }
     .hidden { display: none; }
-    .option { display: block; width: 100%; text-align: left; padding: 10px 10px; border-radius: 8px; cursor: pointer; border: 0; background: transparent; font: inherit; }
+
+    .option {
+      display: block; width: 100%; text-align: left;
+      padding: 10px 10px; border-radius: 8px; cursor: pointer; border: 0; background: transparent; font: inherit;
+    }
     .option:hover, .option:focus { background: #f6f6f6; }
     .option.active { background: #eef2ff; }
 
-    .note { margin-top: 6px; font-size: 12px; color: #667085; min-height: 1em; display:none; }
+    .note { margin-top: 6px; font-size: 12px; color: #667085; min-height: 1em; }
+    .ok { color: #0a7a1c; font-weight: 600; }
 
-    /* Mobile */
+    /*Affichage mobile*/
     @media (max-width: 480px) {
-      .listbox { position: static; max-height: none; box-shadow: none; margin-top: 8px; }
-      .option { padding: 10px 12px; font-size: 16px; }
-      .input input { height: auto; }
+    /*.wrap { padding: 0 12px; }  */           /* petit retrait pour ne pas coller aux bords */
+    .listbox {
+      position: static;                     /* <- clé : plus d'overlay qui déborde */
+      max-height: none;                     /* la liste peut grandir autant que nécessaire */
+      box-shadow: none;                     /* style plus neutre comme Tally */
+      margin-top: 8px;
     }
+    .option {
+      padding: 10px 12px;                   /* confort tactile */
+      font-size: 16px;
+    }
+  }
+    
+  /*Affichage desktop*/
+  /* Desktop : même rendu que le champ Tally */
+  @media (min-width: 481px) {
+  .wrap {
+    width: 100%;
+    max-width: 420px;      /* ajuste à 360–420px si besoin */
+    /*margin: 0 auto;*/        /* pas de retrait à gauche, centré */
+    padding: 0;
+  }
 
-    /* Desktop */
-    @media (min-width: 481px) {
-      .wrap { max-width: 420px; padding: 0; }
-      .listbox { position: absolute; left: 0; right: 0; top: calc(100% + 6px); max-height: 280px; box-shadow: 0 10px 30px rgba(0,0,0,.08); margin-top: 0; }
-      .option { font-size: 16px; padding: 12px 14px; }
-    }
+  .input input {
+    height: 46px;                          /* hauteur visuelle Tally desktop */
+    font-size: 16px;
+    line-height: 1.4;
+    padding: 10px 36px 10px 12px;          /* même ratio + place pour la flèche */
+    border-radius: 10px;
+    box-sizing: border-box;
+  }
+
+  /* Liste en mode overlay (comme un dropdown Tally) */
+  .listbox {
+    position: absolute;                    /* redevient overlay sur desktop */
+    left: 0; right: 0; top: calc(100% + 6px);
+    max-height: 280px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.08);
+    margin-top: 0;
+  }
+
+  .option {
+    font-size: 16px;
+    padding: 12px 14px;
+  }
+}
+
+    
   </style>
 </head>
 <body>
@@ -82,24 +130,13 @@
   </div>
 
   <script>
-    // ─────────────────────────────────────────────────────────────
-    // PATCH — redirection Tally + slugs exacts des champs Short answer
-    // ─────────────────────────────────────────────────────────────
-    const REDIRECT_AFTER_PICK = true; // ← activer la redirection
+    // Comportement : style dropdown Tally (pas de redirection automatique)
+    const REDIRECT_AFTER_PICK = false; // mettre true si vous voulez renvoyer vers Tally après sélection
     const TALLY_FORM_URL = 'https://tally.so/r/3xkYVv';
 
-    // ⚠️ REMPLACE ces slugs par ceux de TES champs (via https://tally.so/api/v1/forms/3xkYVv → fields[].key)
-    const KEYS = {
-      commune:     'commune',       // ex. 'input_qYkWgq'
-      code_postal: 'code_postal',   // ex. 'input_P4jM2n'
-      insee:       'insee',         // ex. 'input_rK9xQz'
-      label:       null             // optionnel: slug d'un champ visible "CP - Ville" (ex. 'input_AbCdEf')
-    };
-
-    // ─────────────────────────────────────────────────────────────
     const input = document.getElementById('q');
-    const list  = document.getElementById('list');
-    const note  = document.getElementById('note');
+    const list = document.getElementById('list');
+    const note = document.getElementById('note');
     const combo = document.querySelector('.wrap');
 
     let lastController = null;
@@ -135,7 +172,9 @@
     function renderList(arr){
       if(!arr.length){ list.innerHTML = '<div class="option" role="option" aria-disabled="true">Aucun résultat</div>'; showList(); return; }
       activeIndex = -1;
-      list.innerHTML = arr.map((it, idx)=>`<button class="option" role="option" id="opt-${idx}" data-idx="${idx}">${it.label}</button>`).join('');
+      list.innerHTML = arr.map((it, idx)=>
+        `<button class="option" role="option" id="opt-${idx}" data-idx="${idx}">${it.label}</button>`
+      ).join('');
       showList();
     }
 
@@ -150,28 +189,39 @@
         const el = options[i];
         el.classList.add('active');
         el.focus({preventScroll:true});
-        const boxTop = list.scrollTop; const boxBottom = boxTop + list.clientHeight;
-        const elTop = el.offsetTop; const elBottom = elTop + el.offsetHeight;
-        if(elTop < boxTop) list.scrollTop = elTop; else if(elBottom > boxBottom) list.scrollTop = elBottom - list.clientHeight;
+        // s'assurer que l'élément actif est visible
+        const boxTop = list.scrollTop;
+        const boxBottom = boxTop + list.clientHeight;
+        const elTop = el.offsetTop;
+        const elBottom = elTop + el.offsetHeight;
+        if(elTop < boxTop) list.scrollTop = elTop;
+        else if(elBottom > boxBottom) list.scrollTop = elBottom - list.clientHeight;
         input.setAttribute('aria-activedescendant', el.id);
       }
     }
 
     function pick(i){
-      const sel = items[i]; if(!sel) return;
+      const sel = items[i];
+      if(!sel) return;
       const value = `${sel.postcode} - ${sel.name}`;
-      input.value = value;
+      input.value = value; // remplir le champ comme un dropdown Tally
+
+      // Copier discrètement pour aider l'utilisateur si besoin
       try { navigator.clipboard.writeText(value); } catch(_) {}
+
+      // Informer l'iframe parente (Tally) si écouté
       try { parent.postMessage({type:'COMMUNE_SELECTED', payload: sel}, '*'); } catch(_) {}
+
+      /*note.innerHTML = `<span class="ok">Sélection enregistrée</span>`;*/
       hideList();
 
-      if (REDIRECT_AFTER_PICK) {
+      if(REDIRECT_AFTER_PICK){
         const params = new URLSearchParams({
-          [KEYS.commune]:     sel.name,
-          [KEYS.code_postal]: sel.postcode,
-          [KEYS.insee]:       sel.insee
+          commune: sel.name,
+          code_postal: sel.postcode,
+          insee: sel.insee,
+          commune_label: sel.label
         });
-        if (KEYS.label) params.set(KEYS.label, value);
         const url = `${TALLY_FORM_URL}?${params.toString()}`;
         setTimeout(()=>{ try { window.top.location.href = url; } catch(_) { window.open(url,'_blank'); } }, 120);
       }
@@ -187,8 +237,17 @@
       else if(e.key==='Escape') { hideList(); }
     });
 
-    list.addEventListener('click', (e)=>{ const btn = e.target.closest('.option'); if(!btn) return; pick(+btn.dataset.idx); });
-    document.addEventListener('click', (e)=>{ if(!document.querySelector('.wrap').contains(e.target)) hideList(); });
+    list.addEventListener('click', (e)=>{
+      const btn = e.target.closest('.option');
+      if(!btn) return; pick(+btn.dataset.idx);
+    });
+
+    // Fermer en cas de clic extérieur
+    document.addEventListener('click', (e)=>{
+      if(!document.querySelector('.wrap').contains(e.target)) hideList();
+    });
+
+    // Accessibilité basique : fermer à la perte de focus globale
     input.addEventListener('blur', ()=> setTimeout(()=>{ if(!document.activeElement || !list.contains(document.activeElement)) hideList(); }, 150));
   </script>
 </body>
