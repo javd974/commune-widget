@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Recherche de commune — Autocomplétion</title>
+  <style>
+    :root { --radius: 14px; --shadow: 0 10px 30px rgba(0,0,0,.08); --gap: 10px; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; margin: 0; background: #fafafa; }
+    .card { max-width: 640px; margin: 18px auto; padding: 16px; background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); }
+    h1 { font-size: 18px; margin: 0 0 8px; }
+    p.helper { margin: 0 0 14px; color: #555; font-size: 14px; }
+    .row { display: flex; gap: var(--gap); }
+    .row > * { flex: 1; }
+    .input { position: relative; }
+    input[type="text"] { width: 100%; font-size: 16px; padding: 12px 14px; border: 1px solid #ddd; border-radius: 12px; outline: none; }
+    input[type="text"]:focus { border-color: #111; }
+    .list { margin-top: 8px; border: 1px solid #eee; border-radius: 12px; overflow: hidden; max-height: 280px; overflow-y: auto; }
+    .item { padding: 10px 12px; cursor: pointer; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; }
+    .item:hover { background: #f6f6f6; }
+    .name { font-weight: 600; }
+    .meta { color: #666; font-size: 13px; }
+    .btns { display: flex; gap: var(--gap); margin-top: 12px; }
+    button { appearance: none; border: 1px solid #111; background: #111; color: #fff; padding: 10px 14px; font-size: 14px; border-radius: 999px; cursor: pointer; }
+    button.secondary { background: #fff; color: #111; }
+    .ok { color: #0a7a1c; font-weight: 600; font-size: 14px; margin-left: 8px; }
+    .small { font-size: 12px; color: #666; }
+    .footer { margin-top: 12px; font-size: 12px; color: #777; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Commune</h1>
+    <p class="helper">Commencez à taper le nom de votre commune (ou votre code postal), puis choisissez dans la liste. Le résultat peut être copié dans votre champ Tally.</p>
+    <div class="input">
+      <input id="q" type="text" placeholder="Ex. La Rochelle / 17000" autocomplete="off" />
+      <div id="list" class="list hidden"></div>
+    </div>
+    <div id="chosen" class="small"></div>
+    <div class="btns">
+      <button id="copyBtn" class="secondary" disabled>Copier la valeur</button>
+      <button id="prefillBtn" disabled>Ouvrir le formulaire prérempli</button>
+      <span id="copied" class="ok hidden">Copié ✅</span>
+    </div>
+    <div class="footer">Données : API Adresse — <a href="https://adresse.data.gouv.fr/api-doc/adresse" target="_blank" rel="noopener">api-adresse.data.gouv.fr</a></div>
+  </div>
+
+  <script>
+    const input = document.getElementById('q');
+    const list = document.getElementById('list');
+    const chosen = document.getElementById('chosen');
+    const copyBtn = document.getElementById('copyBtn');
+    const prefillBtn = document.getElementById('prefillBtn');
+    const copied = document.getElementById('copied');
+
+    let lastController = null;
+    let selected = null; // {label, insee, postcode}
+
+    function debounce(fn, ms){ let t; return (...args)=>{ clearTimeout(t); t = setTimeout(()=>fn(...args), ms); }; }
+
+    function formatLabel(f){
+      const name = f.properties.name;
+      const cp = (f.properties.postcode || '').split(';')[0] || '';
+      const dep = (f.properties.context || '').split(',')[0] || '';
+      const code = f.properties.citycode || f.properties.id || '';
+      const depNum = dep.match(/\b(\d{2,3})\b/); // 2-3 digits at start
+      const depTag = depNum ? ` (${depNum[1]})` : '';
+      const cpPad = cp.padStart(5,'0');
+      return {
+        label: `${cpPad} — ${name}${depTag}`,
+        insee: code,
+        postcode: cpPad,
+        name
+      };
+    }
+
+    async function search(q){
+      if(!q || q.trim().length < 2){ list.innerHTML=''; list.classList.add('hidden'); return; }
+      if(lastController) lastController.abort();
+      lastController = new AbortController();
+      const url = new URL('https://api-adresse.data.gouv.fr/search/');
+      url.searchParams.set('q', q.trim());
+      url.searchParams.set('type','municipality');
+      url.searchParams.set('limit','12');
+      try{
+        const res = await fetch(url, {signal: lastController.signal});
+        const data = await res.json();
+        const items = (data.features||[]).map(formatLabel);
+        if(!items.length){ list.innerHTML = '<div class="item">Aucun résultat</div>'; list.classList.remove('hidden'); return; }
+        list.innerHTML = items.map((it,idx)=>`
+          <div class="item" data-idx="${idx}">
+            <div>
+              <div class="name">${it.label}</div>
+              <div class="meta">INSEE : ${it.insee}${it.name? ' • ' + it.name : ''}</div>
+            </div>
+          </div>
+        `).join('');
+        list.classList.remove('hidden');
+        list.onclick = (e)=>{
+          const el = e.target.closest('.item');
+          if(!el) return;
+          const idx = +el.dataset.idx;
+          selected = items[idx];
+          chosen.innerHTML = `Sélection : <strong>${selected.label}</strong><br><span class="small">INSEE : ${selected.insee}</span>`;
+          copyBtn.disabled = false;
+          prefillBtn.disabled = false;
+          copied.classList.add('hidden');
+          list.classList.add('hidden');
+          // tente d'envoyer la valeur au parent (Tally), au cas où un écouteur existe
+          try{ parent.postMessage({type:'COMMUNE_SELECTED', payload: selected}, '*'); }catch(_){}
+        };
+      }catch(err){ if(err.name !== 'AbortError'){ console.error(err); } }
+    }
+
+    input.addEventListener('input', debounce(()=>search(input.value), 180));
+
+    copyBtn.addEventListener('click', async ()=>{
+      if(!selected) return;
+      const txt = `${selected.postcode} — ${selected.name}`;
+      try{
+        await navigator.clipboard.writeText(txt);
+        copied.classList.remove('hidden'); setTimeout(()=>copied.classList.add('hidden'), 1500);
+      }catch(e){ alert('Impossible de copier automatiquement. Sélectionnez et copiez manuellement : ' + txt); }
+    });
+
+    // Préremplissage d'un formulaire Tally via paramètres d'URL
+    // 1) dans Tally, créez un champ texte appelé "Commune" et/ou des Hidden fields nommés: commune, code_postal, insee
+    // 2) remplacez TALLY_FORM_URL ci-dessous par l'URL publique de votre formulaire (ex: https://tally.so/r/xxxxxxxx)
+    const TALLY_FORM_URL = 'https://tally.so/r/3xkYVv'; // ⚠️ à remplacer par l'URL de VOTRE formulaire
+
+    prefillBtn.addEventListener('click', ()=>{
+      if(!selected) return;
+      const params = new URLSearchParams({
+        commune: selected.name,
+        code_postal: selected.postcode,
+        insee: selected.insee,
+        commune_label: selected.label
+      });
+      const url = `${TALLY_FORM_URL}?${params.toString()}`;
+      // Dans un embed Tally, on tente d'ouvrir dans le parent; sinon, nouvel onglet
+      try { window.top.location.href = url; } catch(_) { window.open(url, '_blank'); }
+    });
+  </script>
+</body>
+</html>
