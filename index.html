@@ -9,7 +9,8 @@
     html, body { background: transparent; margin: 0; padding: 0; }
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color: #111; }
 
-    .wrap { max-width: 720px; margin: 0; }
+    /* Largeur réduite du champ */
+    .wrap { max-width: 420px; margin: 0; }
 
     .input { position: relative; }
     .input input { 
@@ -44,7 +45,6 @@
     .item { padding: 10px 12px; cursor: pointer; }
     .item:hover, .item:focus { background: #f6f6f6; }
     .name { font-weight: 600; }
-    .meta { color: #666; font-size: 13px; }
 
     .note { margin-top: 6px; font-size: 12px; color: #667085; }
     .ok { color: #0a7a1c; font-weight: 600; }
@@ -60,7 +60,7 @@
   </div>
 
   <script>
-    // URL de ton formulaire Tally pour préremplissage
+    // URL de ton formulaire Tally pour préremplissage (intégrée comme demandé)
     const TALLY_FORM_URL = 'https://tally.so/r/3xkYVv';
 
     const input = document.getElementById('q');
@@ -75,13 +75,11 @@
     function formatLabel(f){
       const name = f.properties.name;
       const cp = (f.properties.postcode || '').split(';')[0] || '';
-      const dep = (f.properties.context || '').split(',')[0] || '';
       const code = f.properties.citycode || f.properties.id || '';
-      const depNum = dep.match(/\b(\d{2,3})\b/);
-      const depTag = depNum ? ` (${depNum[1]})` : '';
       const cpPad = (cp || '').toString().padStart(5,'0');
       return {
-        label: `${cpPad} — ${name}${depTag}`,
+        // Affichage demandé : CP - Commune (ex : 17000 - La Rochelle)
+        label: `${cpPad} - ${name}`,
         insee: code,
         postcode: cpPad,
         name
@@ -104,7 +102,6 @@
         list.innerHTML = items.map((it,idx)=>`
           <div class="item" data-idx="${idx}" role="option" tabindex="0">
             <div class="name">${it.label}</div>
-            <div class="meta">INSEE : ${it.insee}</div>
           </div>
         `).join('');
         list.classList.remove('hidden');
@@ -123,7 +120,7 @@
       const selected = items[idx];
       if(!selected) return;
 
-      const txt = `${selected.postcode} — ${selected.name}`;
+      const txt = `${selected.postcode} - ${selected.name}`;
 
       // 1) Copier dans le presse-papiers
       try { await navigator.clipboard.writeText(txt); } catch(_) {}
@@ -144,7 +141,7 @@
       const url = `${TALLY_FORM_URL}?${params.toString()}`;
       setTimeout(()=>{
         try { window.top.location.href = url; } catch(_) { window.open(url, '_blank'); }
-      }, 250);
+      }, 200);
 
       list.classList.add('hidden');
     }
