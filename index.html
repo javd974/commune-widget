@@ -10,17 +10,20 @@
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color: #111; }
 
     /* Largeur contrôlée */
-    .wrap { max-width: 420px; position: relative; }
+    /*.wrap { max-width: 420px; position: relative; }*/
+
+    .wrap {max-width: 100%; width: 100%; margin: 0 auto;}
+
 
     /* Champ */
     .input { position: relative; }
     .input input {
       width: 100%;
-      font-size: 16px;
+      font-size: 17px;
       line-height: 1.3;
-      padding: 12px 14px;
+      padding: 14px 16px;
       border: 1px solid #dcdcdc;
-      border-radius: 12px;
+      border-radius: 10px;
       outline: none;
       background: #fff;
       box-shadow: 0 0 0 3px rgba(61,130,246,0);
@@ -36,6 +39,8 @@
       box-shadow: 0 10px 30px rgba(0,0,0,.08);
       max-height: 280px; overflow-y: auto; padding: 6px;
       z-index: 1000;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
     }
     .hidden { display: none; }
 
