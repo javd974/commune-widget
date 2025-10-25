@@ -12,7 +12,11 @@
     /* Largeur contrôlée */
     /*.wrap { max-width: 420px; position: relative; }*/
 
-    .wrap {max-width: 100%; width: 100%; margin: 0 auto;}
+    .wrap {width: 100%;
+          max-width: 340px;  /* ← ajuste ici selon ton besoin : 320–360px fonctionne bien */
+          margin: 0 auto;    /* centre le champ horizontalement */
+        }
+
 
 
     /* Champ */
@@ -28,6 +32,7 @@
       background: #fff;
       box-shadow: 0 0 0 3px rgba(61,130,246,0);
       transition: box-shadow .15s ease, border-color .15s ease;
+      box-sizing: border-box;  /* indispensable pour éviter le dépassement */
     }
     .input input:focus { border-color: #8bb0ff; box-shadow: 0 0 0 3px rgba(61,130,246,.25); }
     .input input::placeholder { color: #9aa1a9; }
@@ -53,6 +58,12 @@
 
     .note { margin-top: 6px; font-size: 12px; color: #667085; min-height: 1em; }
     .ok { color: #0a7a1c; font-weight: 600; }
+
+    @media (max-width: 480px) {
+  .wrap {
+    max-width: 100%;
+    padding: 0 12px;   /* petit espace pour ne pas coller aux bords */
+  }
   </style>
 </head>
 <body>
