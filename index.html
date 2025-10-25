@@ -11,11 +11,13 @@
 
     /* Largeur contrôlée */
     /*.wrap { max-width: 420px; position: relative; }*/
-
+    /*
     .wrap {width: 100%;
           max-width: 340px;  /* ← ajuste ici selon ton besoin : 320–360px fonctionne bien */
           /*margin: 0 auto;*/    /* centre le champ horizontalement */
-        }
+        } */
+
+    .wrap { width: 100%; max-width: 100%; margin: 0 auto; }
 
 
 
@@ -60,10 +62,18 @@
     .ok { color: #0a7a1c; font-weight: 600; }
 
     @media (max-width: 480px) {
-  .wrap {
-    max-width: 100%;
-    padding: 0 12px;   /* petit espace pour ne pas coller aux bords */
+  .wrap { padding: 0 12px; }             /* petit retrait pour ne pas coller aux bords */
+  .listbox {
+    position: static;                     /* <- clé : plus d'overlay qui déborde */
+    max-height: none;                     /* la liste peut grandir autant que nécessaire */
+    box-shadow: none;                     /* style plus neutre comme Tally */
+    margin-top: 8px;
   }
+  .option {
+    padding: 14px 16px;                   /* confort tactile */
+    font-size: 17px;
+  }
+}
   </style>
 </head>
 <body>
