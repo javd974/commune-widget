@@ -41,7 +41,7 @@
       font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       font-size: 16px;
       font-weight: 500;
-      color: #9CA3AF;         /* gris doux façon Tally */
+      color: #BBBAB8;         /* gris Tally */
       opacity: 1;             /* évite le placeholder trop pâle sur Android */
     }
 
@@ -68,19 +68,56 @@
     .note { margin-top: 6px; font-size: 12px; color: #667085; min-height: 1em; }
     .ok { color: #0a7a1c; font-weight: 600; }
 
+    /*Affichage mobile*/
     @media (max-width: 480px) {
-  /*.wrap { padding: 0 12px; }  */           /* petit retrait pour ne pas coller aux bords */
-  .listbox {
-    position: static;                     /* <- clé : plus d'overlay qui déborde */
-    max-height: none;                     /* la liste peut grandir autant que nécessaire */
-    box-shadow: none;                     /* style plus neutre comme Tally */
-    margin-top: 8px;
+    /*.wrap { padding: 0 12px; }  */           /* petit retrait pour ne pas coller aux bords */
+    .listbox {
+      position: static;                     /* <- clé : plus d'overlay qui déborde */
+      max-height: none;                     /* la liste peut grandir autant que nécessaire */
+      box-shadow: none;                     /* style plus neutre comme Tally */
+      margin-top: 8px;
+    }
+    .option {
+      padding: 10px 12px;                   /* confort tactile */
+      font-size: 15px;
+    }
   }
+    
+  /*Affichage desktop*/
+  /* Desktop : même rendu que le champ Tally */
+  @media (min-width: 481px) {
+  .wrap {
+    width: 100%;
+    max-width: 420px;      /* ajuste à 360–420px si besoin */
+    margin: 0 auto;        /* pas de retrait à gauche, centré */
+    padding: 0;
+  }
+
+  .input input {
+    height: 46px;                          /* hauteur visuelle Tally desktop */
+    font-size: 16px;
+    line-height: 1.4;
+    padding: 10px 36px 10px 12px;          /* même ratio + place pour la flèche */
+    border-radius: 10px;
+    box-sizing: border-box;
+  }
+
+  /* Liste en mode overlay (comme un dropdown Tally) */
+  .listbox {
+    position: absolute;                    /* redevient overlay sur desktop */
+    left: 0; right: 0; top: calc(100% + 6px);
+    max-height: 280px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.08);
+    margin-top: 0;
+  }
+
   .option {
-    padding: 10px 12px;                   /* confort tactile */
-    font-size: 15px;
+    font-size: 16px;
+    padding: 12px 14px;
   }
 }
+
+    
   </style>
 </head>
 <body>
