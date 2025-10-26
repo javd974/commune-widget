@@ -200,34 +200,34 @@
       }
     }
 
-function pick(i) {
-  const sel = items[i];
-  if (!sel) return;
-
-  const value = `${sel.postcode} - ${sel.name}`;
-  input.value = value;
-  hideList();
-
-  // Envoi des données directement à Tally (pas de redirection)
-  try {
-    parent.postMessage(
-      {
-        type: 'TALLY_EMBED_SET_FIELDS',
-        fields: {
-          commune: sel.name,
-          code_postal_1: sel.postcode,
-          insee: sel.insee
-        }
-      },
-      '*'
-    );
-  } catch (err) {
-    console.error('Erreur envoi Tally:', err);
-  }
-
-  // Optionnel : petit retour visuel
-  // note.innerHTML = `<span class="ok">Commune enregistrée</span>`;
-}
+    function pick(i) {
+      const sel = items[i];
+      if (!sel) return;
+    
+      const value = `${sel.postcode} - ${sel.name}`;
+      input.value = value;
+      hideList();
+    
+      try {
+        parent.postMessage(
+          {
+            type: 'TALLY_EMBED_SET_FIELDS',
+            fields: {
+              commune: sel.name,
+              code_postal_1: sel.postcode,
+              insee: sel.insee
+            }
+          },
+          '*'
+        );
+        console.log('Données envoyées à Tally', sel);
+      } catch (err) {
+        console.error('Erreur envoi Tally:', err);
+      }
+    
+      // feedback visuel optionnel
+      // note.innerHTML = `<span class="ok">Commune enregistrée</span>`;
+    }
 
     
 
