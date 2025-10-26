@@ -123,7 +123,7 @@
 <body>
   <div class="wrap" role="combobox" aria-haspopup="listbox" aria-owns="list" aria-expanded="false">
     <div class="input">
-      <input id="q" type="text" placeholder="Commencez à taper …" autocomplete="off" aria-autocomplete="list" aria-controls="list" aria-activedescendant="" aria-label="Commune" />
+      <input id="q" type="text" placeholder="Commencez à taper …" autocomplete="off" aria-autocomplete="list" aria-controls="list" aria-activedescendant="" aria-label="" />
       <div id="list" class="listbox hidden" role="listbox" aria-label="Suggestions"></div>
     </div>
     <div id="note" class="note"></div>
@@ -131,7 +131,7 @@
 
   <script>
     // Comportement : style dropdown Tally (pas de redirection automatique)
-    const REDIRECT_AFTER_PICK = false; // mettre true si vous voulez renvoyer vers Tally après sélection
+    const REDIRECT_AFTER_PICK = true; // mettre true si vous voulez renvoyer vers Tally après sélection
     const TALLY_FORM_URL = 'https://tally.so/r/3xkYVv';
 
     const input = document.getElementById('q');
@@ -210,7 +210,7 @@
       try { navigator.clipboard.writeText(value); } catch(_) {}
 
       // Informer l'iframe parente (Tally) si écouté
-      try { parent.postMessage({type:'COMMUNE_SELECTED', payload: sel}, '*'); } catch(_) {}
+      try { parent.postMessage({type:'_SELECTED', payload: sel}, '*'); } catch(_) {}
 
       /*note.innerHTML = `<span class="ok">Sélection enregistrée</span>`;*/
       hideList();
@@ -223,7 +223,10 @@
           commune_label: sel.label
         });
         const url = `${TALLY_FORM_URL}?${params.toString()}`;
-        setTimeout(()=>{ try { window.top.location.href = url; } catch(_) { window.open(url,'_blank'); } }, 120);
+
+      // IMPORTANT : rediriger la fenêtre parente (pas l’iframe)
+      try { window.top.location.assign(url); }
+      catch { window.location.href = url; } // fallback si sandbox
       }
     }
 
