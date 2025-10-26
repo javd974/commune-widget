@@ -73,9 +73,21 @@
 
     <!-- bouton validé au clic (geste utilisateur) -->
     <a id="go" href="#" target="_top" role="button"
-       style="display:none;margin-top:10px;padding:8px 14px;font-size:15px;border-radius:8px;border:1px solid #ccc;background:#f7f7f7;cursor:pointer;text-decoration:none;display:inline-block;">
+       style="
+         display:none;
+         margin-top:10px;
+         padding:8px 14px;
+         font-size:15px;
+         border-radius:8px;
+         border:1px solid #ccc;
+         background:#f7f7f7;
+         cursor:pointer;
+         text-decoration:none;
+         display:inline-block;
+       ">
       Ouvrir le formulaire prérempli
     </a>
+
 
     <div id="note" class="note"></div>
   </div>
@@ -174,7 +186,7 @@
       input.value = value;
       hideList();
     
-      // Construire l'URL Tally préremplie
+      // Crée l'URL Tally préremplie
       const params = new URLSearchParams({
         commune: sel.name,
         code_postal_1: sel.postcode,
@@ -182,10 +194,10 @@
       });
       const url = `${TALLY_FORM_URL}?${params.toString()}`;
     
-      // Armer le lien (clic utilisateur => navigation au top)
+      // Met à jour le lien (clic utilisateur = navigation propre sans alerte)
       btnGo.href = url;
       btnGo.style.display = 'inline-block';
-      console.log('Lien prérempli prêt :', url);
+      console.log('✅ Lien prêt :', url);
     }
 
 
