@@ -188,6 +188,13 @@
       btnGo.href = url;
       btnGo.style.display = 'inline-block';
       console.log('✅ Lien prêt :', url);
+
+      btnGo.addEventListener('click', (e) => {
+        // si jamais un autre style a remis href="#", on bloque
+        if (!btnGo.href || btnGo.href.endsWith('#')) e.preventDefault();
+        // rien d’autre : pas de window.location ici
+      });
+
     }
 
 
