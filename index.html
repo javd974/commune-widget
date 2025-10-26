@@ -208,11 +208,12 @@
       input.value = value;
       hideList();
     
+      // ✅ Envoi correct vers Tally
       try {
         parent.postMessage(
           {
-            type: 'TALLY_EMBED_SET_FIELDS',
-            fields: {
+            type: 'TALLY_SET_FORM_VALUES',
+            values: {
               commune: sel.name,
               code_postal_1: sel.postcode,
               insee: sel.insee
@@ -222,12 +223,10 @@
         );
         console.log('Données envoyées à Tally', sel);
       } catch (err) {
-        console.error('Erreur envoi Tally:', err);
+        console.error('Erreur postMessage Tally:', err);
       }
-    
-      // feedback visuel optionnel
-      // note.innerHTML = `<span class="ok">Commune enregistrée</span>`;
     }
+
 
     
 
