@@ -200,38 +200,35 @@
       }
     }
 
-    function pick(i){
-      const sel = items[i];
-      if(!sel) return;
-      const value = `${sel.postcode} - ${sel.name}`;
-      input.value = value; // remplir le champ comme un dropdown Tally
+function pick(i) {
+  const sel = items[i];
+  if (!sel) return;
 
-      // Copier discrètement pour aider l'utilisateur si besoin
-      try { navigator.clipboard.writeText(value); } catch(_) {}
+  const value = `${sel.postcode} - ${sel.name}`;
+  input.value = value;
+  hideList();
 
-      // Informer l'iframe parente (Tally) si écouté
-      try { parent.postMessage({type:'_SELECTED', payload: sel}, '*'); } catch(_) {}
-
-      /*note.innerHTML = `<span class="ok">Sélection enregistrée</span>`;*/
-      hideList();
-
-      if(REDIRECT_AFTER_PICK){
-        const params = new URLSearchParams({
+  // Envoi des données directement à Tally (pas de redirection)
+  try {
+    parent.postMessage(
+      {
+        type: 'TALLY_EMBED_SET_FIELDS',
+        fields: {
           commune: sel.name,
-          code_postal: sel.postcode,
-          insee: sel.insee,
-          commune_label: sel.label
-        });
-        const url = `${TALLY_FORM_URL}?${params.toString()}`;
+          code_postal_1: sel.postcode,
+          insee: sel.insee
+        }
+      },
+      '*'
+    );
+  } catch (err) {
+    console.error('Erreur envoi Tally:', err);
+  }
 
-      // ✅ redirige la page Tally (parent)
-      try {
-        window.top.location.replace(url); // pas d’alerte “la page va se fermer”, pas d’historique
-      } catch {
-        window.location.href = url;       // fallback si sandbox
-      }
-    }
-    }
+  // Optionnel : petit retour visuel
+  // note.innerHTML = `<span class="ok">Commune enregistrée</span>`;
+}
+
     
 
     // Événements
