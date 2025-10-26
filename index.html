@@ -72,7 +72,10 @@
     </div>
 
     <!-- bouton validé au clic (geste utilisateur) -->
-    <button id="go" type="button">Valider ma commune</button>
+    <a id="go" href="#" target="_top" role="button"
+       style="display:none;margin-top:10px;padding:8px 14px;font-size:15px;border-radius:8px;border:1px solid #ccc;background:#f7f7f7;cursor:pointer;text-decoration:none;display:inline-block;">
+      Ouvrir le formulaire prérempli
+    </a>
 
     <div id="note" class="note"></div>
   </div>
@@ -163,14 +166,28 @@
     }
 
     function pick(i){
-      const sel = items[i]; if(!sel) return;
-      lastSel = sel;                                     // mémorise
+      const sel = items[i];
+      if (!sel) return;
+    
+      lastSel = sel;
       const value = `${sel.postcode} - ${sel.name}`;
       input.value = value;
       hideList();
-      btnGo.style.display = 'inline-block';              // montre le bouton
-      console.log('Sélection enregistrée', sel);
+    
+      // Construire l'URL Tally préremplie
+      const params = new URLSearchParams({
+        commune: sel.name,
+        code_postal_1: sel.postcode,
+        insee: sel.insee
+      });
+      const url = `${TALLY_FORM_URL}?${params.toString()}`;
+    
+      // Armer le lien (clic utilisateur => navigation au top)
+      btnGo.href = url;
+      btnGo.style.display = 'inline-block';
+      console.log('Lien prérempli prêt :', url);
     }
+
 
     // Événements
     input.addEventListener('input', debounce(()=>search(input.value), 140));
@@ -192,18 +209,6 @@
 
     input.addEventListener('blur', ()=> setTimeout(()=>{ if(!document.activeElement || !list.contains(document.activeElement)) hideList(); }, 150));
 
-    // Clic utilisateur → redirection propre (préremplissage par URL)
-    btnGo.addEventListener('click', ()=>{
-      if(!lastSel) return;
-      const params = new URLSearchParams({
-        commune: lastSel.name,
-        code_postal_1: lastSel.postcode,
-        insee: lastSel.insee
-      });
-      const url = `${TALLY_FORM_URL}?${params.toString()}`;
-      console.log('➡️ Redirection Tally avec paramètres :', url);
-      if(window.top) window.top.location.assign(url); else window.location.assign(url);
-    });
   </script>
 </body>
 </html>
