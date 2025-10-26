@@ -224,9 +224,11 @@
         });
         const url = `${TALLY_FORM_URL}?${params.toString()}`;
 
-      // IMPORTANT : rediriger la fenêtre parente (pas l’iframe)
-      try { window.top.location.assign(url); }
-      catch { window.location.href = url; } // fallback si sandbox
+      // ✅ redirige la page Tally (parent)
+      try {
+        window.top.location.replace(url); // pas d’alerte “la page va se fermer”, pas d’historique
+      } catch {
+        window.location.href = url;       // fallback si sandbox
       }
     }
 
