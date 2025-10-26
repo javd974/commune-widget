@@ -126,6 +126,24 @@
       <input id="q" type="text" placeholder="Commencez à taper …" autocomplete="off" aria-autocomplete="list" aria-controls="list" aria-activedescendant="" aria-label="" />
       <div id="list" class="listbox hidden" role="listbox" aria-label="Suggestions"></div>
     </div>
+    
+      let lastSel = null;
+      const btnGo = document.getElementById('go');
+    
+    <button id="go" type="button" style="
+      display:none;
+      margin-top:10px;
+      padding:8px 14px;
+      font-size:15px;
+      border-radius:8px;
+      border:1px solid #ccc;
+      background:#f7f7f7;
+      cursor:pointer;
+    ">
+      Valider ma commune
+    </button>
+
+    
     <div id="note" class="note"></div>
   </div>
 
@@ -138,6 +156,10 @@
     const list = document.getElementById('list');
     const note = document.getElementById('note');
     const combo = document.querySelector('.wrap');
+
+    let lastSel = null;                  // ⬅️ variable JS pour stocker la sélection
+    const btnGo = document.getElementById('go'); // ⬅️ récupère le bouton
+
 
     let lastController = null;
     let items = [];
@@ -204,28 +226,17 @@
       const sel = items[i];
       if (!sel) return;
     
+      lastSel = sel; // mémoriser
       const value = `${sel.postcode} - ${sel.name}`;
       input.value = value;
       hideList();
     
-      // ✅ Envoi correct vers Tally
-      try {
-        parent.postMessage(
-          {
-            type: 'TALLY_SET_FORM_VALUES',
-            values: {
-              commune: sel.name,
-              code_postal_1: sel.postcode,
-              insee: sel.insee
-            }
-          },
-          '*'
-        );
-        console.log('Données envoyées à Tally', sel);
-      } catch (err) {
-        console.error('Erreur postMessage Tally:', err);
-      }
+      // ✅ Afficher le bouton de validation (geste utilisateur)
+      btnGo.style.display = 'inline-block';
+    
+      console.log('Sélection enregistrée', sel);
     }
+
 
 
     
@@ -252,6 +263,28 @@
 
     // Accessibilité basique : fermer à la perte de focus globale
     input.addEventListener('blur', ()=> setTimeout(()=>{ if(!document.activeElement || !list.contains(document.activeElement)) hideList(); }, 150));
+
+    btnGo.addEventListener('click', () => {
+      if (!lastSel) return;
+    
+      const params = new URLSearchParams({
+        commune: lastSel.name,
+        code_postal_1: lastSel.postcode,
+        insee: lastSel.insee
+      });
+    
+      const url = `${TALLY_FORM_URL}?${params.toString()}`;
+      console.log('➡️ Redirection Tally avec paramètres :', url);
+    
+      // Redirection propre sans alerte
+      if (window.top) {
+        window.top.location.assign(url);
+      } else {
+        window.location.assign(url);
+      }
+    });
+
+    
   </script>
 </body>
 </html>
